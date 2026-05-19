@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sendalia — Email Storytellers</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:     '#f1ebdb',
+            copper:    '#b97455',
+            copperDark:'#8c5538',
+            slate:     '#1A1A1A',
+            sage:      '#a4b19d',
+            sageMuted: '#a19d92',
+            sand:      '#d9d2c0',
+            gold:      '#896b00',
+            bark:      '#6d4b1a',
+          },
+          fontFamily: {
+            serif:  ['Cormorant Garamond', 'Georgia', 'serif'],
+            display:['Playfair Display', 'Georgia', 'serif'],
+            sans:   ['Jost', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #f1ebdb;
+      color: #1A1A1A;
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── Typography ── */
+    .font-serif-display { font-family: 'Cormorant Garamond', serif; }
+    .font-display        { font-family: 'Playfair Display', serif; }
+
+    .label-tag {
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #b97455;
+    }
+
+    /* ── Nav ── */
+    nav {
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(241,235,219,0.88);
+      border-bottom: 1px solid rgba(185,116,85,0.12);
+    }
+
+    /* ── Buttons ── */
+    .btn-copper {
+      background: #b97455;
+      color: #f1ebdb;
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      padding: 0.85rem 2.2rem;
+      border: 1px solid #b97455;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .btn-copper:hover {
+      background: #6d4b1a;
+      border-color: #6d4b1a;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #b97455;
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      padding: 0.75rem 1.8rem;
+      border: 1px solid #b97455;
+      transition: background 0.3s ease, color 0.3s ease;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .btn-outline:hover {
+      background: #b97455;
+      color: #f1ebdb;
+    }
+
+    /* ── Decorative line ── */
+    .deco-line {
+      width: 2.5rem;
+      height: 1px;
+      background: #b97455;
+      display: inline-block;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border: 1px solid rgba(185,116,85,0.1);
+      box-shadow: 0 2px 24px rgba(109,75,26,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(109,75,26,0.1);
+    }
+
+    /* ── Portfolio placeholder ── */
+    .portfolio-placeholder {
+      background: linear-gradient(135deg, rgba(217,210,192,0.3) 0%, rgba(164,177,157,0.12) 100%);
+      border: 1px dashed rgba(185,116,85,0.25);
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .portfolio-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(185,116,85,0.12);
+      pointer-events: none;
+    }
+
+    /* ── Step number ── */
+    .step-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 4.5rem;
+      font-weight: 300;
+      color: rgba(185,116,85,0.15);
+      line-height: 1;
+      position: absolute;
+      top: -0.5rem;
+      left: -0.75rem;
+      pointer-events: none;
+    }
+
+    /* ── Divider ornament ── */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      max-width: 6rem;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(185,116,85,0.4));
+    }
+    .ornament::after {
+      background: linear-gradient(90deg, rgba(185,116,85,0.4), transparent);
+    }
+
+    /* ── Fade-in animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.9s ease both; }
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.30s; }
+    .delay-3 { animation-delay: 0.45s; }
+    .delay-4 { animation-delay: 0.60s; }
+
+    /* ── Horizontal rule style ── */
+    hr.fancy {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(185,116,85,0.25), transparent);
+      margin: 0;
+    }
+
+    /* ── Philosophy table ── */
+    .vs-col-bad  { background: #fff; border-top: 2px solid #a19d92; }
+    .vs-col-good { background: #fff; border-top: 2px solid #b97455; }
+
+    /* ── Booking card ── */
+    .booking-frame {
+      background: #fff;
+      border: 1px solid rgba(185,116,85,0.18);
+      box-shadow: 0 4px 40px rgba(109,75,26,0.08), inset 0 0 0 6px rgba(241,235,219,0.5);
+    }
+
+    /* ── Mobile menu ── */
+    #mobile-menu { transition: max-height 0.35s ease, opacity 0.3s ease; }
+
+    /* ── Footer ── */
+    footer {
+      background: #1A1A1A;
+      color: rgba(241,235,219,0.65);
+    }
+    footer a { color: rgba(185,116,85,0.8); transition: color 0.2s; }
+    footer a:hover { color: #b97455; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════════ -->
+<nav class="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-4">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+    <!-- Logo + wordmark -->
+    <a href="#" class="flex items-center group">
+      <!--
+        LOGO: uses mix-blend-mode:multiply so the black background
+        of the PNG becomes transparent on the cream nav — only the
+        gold artwork shows. To swap files later, just update the src.
+        Full logo (icon + wordmark): Untitled_Design_-_1__1_.png
+        Icon only:                   Untitled_Design_-_4__1_.png
+      -->
+      <img
+        src="Untitled_Design_-_1__1_.png"
+        alt="Sendalia — Email Storytellers"
+        style="height:52px;width:auto;object-fit:contain;display:block;mix-blend-mode:multiply;"
+        onerror="this.style.display='none';document.getElementById('nav-wordmark-fallback').style.display='flex';"
+      />
+      <!-- Fallback wordmark if image file is missing -->
+      <div id="nav-wordmark-fallback" style="display:none;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.05rem;letter-spacing:0.2em;color:#1A1A1A;text-transform:uppercase;line-height:1.1;">Sendalia</div>
+        <div class="label-tag" style="font-size:0.55rem;letter-spacing:0.25em;color:#b97455;">Email Storytellers</div>
+      </div>
+    </a>
+
+    <!-- Desktop nav links -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#philosophy" class="label-tag hover:text-slate transition-colors duration-200" style="color:#a19d92;">Our Method</a>
+      <a href="#portfolio"  class="label-tag hover:text-slate transition-colors duration-200" style="color:#a19d92;">Work</a>
+      <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="label-tag hover:text-slate transition-colors duration-200" style="color:#a19d92;">Free Audit</a>
+      <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="btn-copper">Get Your Free Audit</a>
+    </div>
+
+    <!-- Mobile hamburger -->
+    <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
+      <span class="block w-6 h-px bg-slate transition-all duration-300"></span>
+      <span class="block w-6 h-px bg-slate transition-all duration-300"></span>
+      <span class="block w-4 h-px bg-copper transition-all duration-300"></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="md:hidden overflow-hidden max-h-0 opacity-0">
+    <div class="max-w-7xl mx-auto pt-4 pb-6 flex flex-col gap-5 border-t border-sand mt-4" style="border-color:rgba(185,116,85,0.15);">
+      <a href="#philosophy" class="label-tag" style="color:#a19d92;">Our Method</a>
+      <a href="#portfolio"  class="label-tag" style="color:#a19d92;">Work</a>
+      <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="label-tag" style="color:#a19d92;">Free Audit</a>
+      <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="btn-copper self-start mt-2">Get Your Free Audit</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const menu      = document.getElementById('mobile-menu');
+  let open = false;
+  hamburger.addEventListener('click', () => {
+    open = !open;
+    menu.style.maxHeight = open ? menu.scrollHeight + 'px' : '0';
+    menu.style.opacity   = open ? '1' : '0';
+  });
+</script>
+
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════ -->
+<section class="relative min-h-screen flex flex-col justify-center pt-24 pb-0 overflow-hidden">
+
+  <div class="max-w-7xl mx-auto w-full px-6 md:px-12 grid lg:grid-cols-2 gap-0 items-center min-h-screen">
+
+    <!-- LEFT — Text content -->
+    <div class="py-16 lg:py-0 lg:pr-16">
+
+      <div class="flex items-center gap-3 mb-8 fade-up">
+        <span class="deco-line"></span>
+        <span class="label-tag">For DTC &amp; E-Commerce Brands</span>
+      </div>
+
+      <h1 class="fade-up delay-1 font-serif-display leading-tight mb-7" style="font-size:clamp(2.6rem,5.5vw,4.8rem);font-weight:400;color:#1A1A1A;line-height:1.08;">
+        We write the stories that turn<br />
+        <em style="color:#b97455;font-style:italic;">your email list</em><br />
+        into a revenue engine.
+      </h1>
+
+      <p class="fade-up delay-2 mb-10 leading-relaxed" style="font-family:'Jost',sans-serif;font-weight:300;font-size:1.05rem;color:#a19d92;max-width:480px;letter-spacing:0.01em;line-height:1.8;">
+        Sendalia crafts narrative-driven, high-converting email flows for fast-growing DTC brands — built entirely around your brand voice, shipped without disrupting your schedule.
+      </p>
+
+      <div class="fade-up delay-3 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <!--
+          PRIMARY CTA — opens the JotForm intake directly.
+          JotForm will email you every time someone submits.
+          Configure notifications: JotForm → Settings → Emails.
+        -->
+        <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="btn-copper">
+          Claim Your Free Email Audit →
+        </a>
+        <a href="#philosophy" class="btn-outline">See How We Work</a>
+      </div>
+
+      <!-- Trust bar -->
+      <div class="fade-up delay-4 mt-16 pt-10" style="border-top:1px solid rgba(185,116,85,0.15);">
+        <p class="label-tag mb-6" style="color:#d9d2c0;">Built around your brand —</p>
+        <div class="flex flex-wrap gap-x-8 gap-y-4">
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#b97455"/><path d="M4.5 7l2 2 3-3" stroke="#b97455" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="label-tag" style="color:#a19d92;">Klaviyo-native flows</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#b97455"/><path d="M4.5 7l2 2 3-3" stroke="#b97455" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="label-tag" style="color:#a19d92;">Zero live calls required</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#b97455"/><path d="M4.5 7l2 2 3-3" stroke="#b97455" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="label-tag" style="color:#a19d92;">Revenue-first strategy</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#b97455"/><path d="M4.5 7l2 2 3-3" stroke="#b97455" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="label-tag" style="color:#a19d92;">Story-led brand voice</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT — Hero image -->
+    <div class="relative h-full min-h-[420px] lg:min-h-screen hidden lg:block">
+      <!--
+        ══════════════════════════════════════════════
+        HERO IMAGE
+        To swap: replace the src value below with your
+        own image path, e.g. src="assets/hero.jpg"
+        Recommended: a warm, editorial lifestyle photo —
+        someone at a desk writing, an open laptop with
+        soft light, or a styled flat-lay with a phone +
+        coffee. Aspect ratio fills the right half of the
+        viewport automatically.
+        ══════════════════════════════════════════════
+      -->
+      <img
+        src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&q=80&auto=format&fit=crop"
+        alt="A brand strategist crafting email stories at a warm, editorial workspace"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;"
+      />
+      <!-- Warm gradient overlay — keeps text readable and ties to cream bg -->
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,#f1ebdb 0%,rgba(241,235,219,0.15) 30%,transparent 60%);"></div>
+      <!-- Bottom fade to page bg -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to top,#f1ebdb,transparent);"></div>
+
+      <!-- Floating stat card — editorial accent -->
+      <div class="absolute bottom-20 right-8 fade-up delay-4" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);border:1px solid rgba(185,116,85,0.15);padding:1.25rem 1.6rem;box-shadow:0 8px 32px rgba(109,75,26,0.1);">
+        <p class="label-tag mb-1" style="color:#b97455;">Average client result</p>
+        <p class="font-serif-display" style="font-size:2rem;font-weight:400;color:#1A1A1A;line-height:1;">32%</p>
+        <p style="font-size:0.75rem;color:#a19d92;font-weight:300;letter-spacing:0.05em;">lift in email-attributed revenue</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Mobile hero image (shown below text on small screens) -->
+  <div class="lg:hidden relative w-full" style="height:280px;">
+    <img
+      src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=75&auto=format&fit=crop"
+      alt="Editorial workspace"
+      style="width:100%;height:100%;object-fit:cover;object-position:center top;"
+    />
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,#f1ebdb 0%,transparent 60%);"></div>
+  </div>
+
+</section>
+
+<hr class="fancy" />
+
+
+<!-- ═══════════════════════════════════════════════
+     PHILOSOPHY — STORYTELLING VS. BLASTING
+═══════════════════════════════════════════════ -->
+<section id="philosophy" class="py-24 px-6 md:px-12">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Section header -->
+    <div class="text-center mb-16">
+      <div class="ornament mb-5">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="#b97455" stroke-width="1.2" stroke-linecap="round"/><circle cx="9" cy="9" r="3" stroke="#b97455" stroke-width="1.2"/></svg>
+      </div>
+      <span class="label-tag block mb-4">Our Core Positioning</span>
+      <h2 class="font-serif-display" style="font-size:clamp(2rem,4vw,3.4rem);font-weight:400;line-height:1.12;">
+        The difference between<br /><em style="color:#b97455;">storytelling</em> and blasting
+      </h2>
+      <p class="mt-4 mx-auto" style="max-width:480px;color:#a19d92;font-size:0.95rem;line-height:1.8;font-weight:300;">
+        Most brands treat email as a broadcast channel. We treat it as an ongoing conversation — one that builds loyalty, drives repeat revenue, and never burns your list.
+      </p>
+    </div>
+
+    <!-- VS split -->
+    <div class="grid md:grid-cols-2 gap-6 lg:gap-10 max-w-5xl mx-auto">
+
+      <!-- Left — Old way -->
+      <div class="vs-col-bad p-8 md:p-10">
+        <div class="label-tag mb-5" style="color:#a19d92;">The Old Way — Promo Blasting</div>
+        <ul class="space-y-5">
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="border:1px solid #d9d2c0;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 2l4 4M6 2L2 6" stroke="#a19d92" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Batch-and-blast campaigns every week</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Trains your list to ignore you — or worse, mark you as spam.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="border:1px solid #d9d2c0;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 2l4 4M6 2L2 6" stroke="#a19d92" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Generic discount-led subject lines</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Destroys brand equity and conditions customers to wait for sales only.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="border:1px solid #d9d2c0;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 2l4 4M6 2L2 6" stroke="#a19d92" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">No segmentation or lifecycle logic</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">First-time buyers receive the same email as your most loyal customers.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="border:1px solid #d9d2c0;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 2l4 4M6 2L2 6" stroke="#a19d92" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Revenue spikes, then vanishes</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Dependent on constant manual effort with no compounding return.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right — Sendalia way -->
+      <div class="vs-col-good p-8 md:p-10 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-5">
+          <svg viewBox="0 0 96 96" fill="none"><circle cx="48" cy="48" r="47" stroke="#b97455"/><circle cx="48" cy="48" r="32" stroke="#b97455"/></svg>
+        </div>
+        <div class="label-tag mb-5" style="color:#b97455;">The Sendalia Way — Story-Driven Retention</div>
+        <ul class="space-y-5">
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="background:#b97455;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#f1ebdb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Automated, narrative-led sequences</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Flows that run 24/7 and generate revenue while you sleep.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="background:#b97455;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#f1ebdb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Brand-voice email copy that builds community</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Customers feel heard, not sold to — leading to higher LTV.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="background:#b97455;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#f1ebdb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Deep segmentation &amp; lifecycle strategy</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Every subscriber receives the right message at the right moment.</p>
+            </div>
+          </li>
+          <li class="flex gap-4 items-start">
+            <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center" style="background:#b97455;border-radius:50%;">
+              <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#f1ebdb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <p style="font-weight:400;font-size:0.9rem;margin-bottom:0.2rem;">Compounding, predictable retention revenue</p>
+              <p style="color:#a19d92;font-size:0.82rem;line-height:1.7;font-weight:300;">Email becomes your most reliable and scalable revenue channel.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Quote -->
+    <div class="mt-16 text-center">
+      <blockquote class="font-serif-display italic mx-auto" style="font-size:clamp(1.4rem,2.5vw,2rem);font-weight:300;color:#1A1A1A;max-width:640px;line-height:1.5;">
+        "The best email you'll ever send is the one that feels like it wasn't written for everyone — just for them."
+      </blockquote>
+      <div class="mt-4 flex items-center justify-center gap-3">
+        <span class="deco-line" style="width:1.5rem;"></span>
+        <span class="label-tag" style="color:#b97455;">The Sendalia principle</span>
+        <span class="deco-line" style="width:1.5rem;"></span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="fancy" />
+
+
+<!-- ═══════════════════════════════════════════════
+     PORTFOLIO PLACEHOLDER
+═══════════════════════════════════════════════ -->
+<section id="portfolio" class="py-24 px-6 md:px-12">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-6">
+      <div>
+        <span class="label-tag block mb-4">Our Work</span>
+        <h2 class="font-serif-display" style="font-size:clamp(2rem,4vw,3rem);font-weight:400;line-height:1.12;">
+          Email flows<br />crafted with intent
+        </h2>
+      </div>
+      <p class="md:max-w-xs" style="color:#a19d92;font-size:0.9rem;line-height:1.8;font-weight:300;">
+        From first open to fifth repurchase — every sequence is built to carry your brand story forward.
+      </p>
+    </div>
+
+    <!-- 3-column portfolio grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Portfolio item 1 -->
+      <div class="card group cursor-pointer overflow-hidden">
+        <div class="portfolio-placeholder">
+          <svg class="mb-3 opacity-30 group-hover:opacity-50 transition-opacity" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="6" width="28" height="20" rx="2" stroke="#b97455" stroke-width="1.5"/>
+            <path d="M2 10l14 9 14-9" stroke="#b97455" stroke-width="1.5"/>
+          </svg>
+          <span class="label-tag" style="color:#a19d92;font-size:0.6rem;">Preview coming soon</span>
+        </div>
+        <div class="p-6">
+          <span class="label-tag block mb-2">Flow 01</span>
+          <h3 class="font-serif-display text-xl mb-2" style="font-weight:400;">Welcome Sequence</h3>
+          <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;">A 5-part narrative onboarding series that converts new subscribers into first-time buyers within 72 hours.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio item 2 -->
+      <div class="card group cursor-pointer overflow-hidden">
+        <div class="portfolio-placeholder">
+          <svg class="mb-3 opacity-30 group-hover:opacity-50 transition-opacity" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M6 28V10l10-6 10 6v18" stroke="#b97455" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="12" y="18" width="8" height="10" stroke="#b97455" stroke-width="1.5"/>
+          </svg>
+          <span class="label-tag" style="color:#a19d92;font-size:0.6rem;">Preview coming soon</span>
+        </div>
+        <div class="p-6">
+          <span class="label-tag block mb-2">Flow 02</span>
+          <h3 class="font-serif-display text-xl mb-2" style="font-weight:400;">Abandoned Cart Flow</h3>
+          <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;">A 3-touch recovery sequence that recovers lost revenue through urgency, social proof, and story — not discounts.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio item 3 -->
+      <div class="card group cursor-pointer overflow-hidden">
+        <div class="portfolio-placeholder">
+          <svg class="mb-3 opacity-30 group-hover:opacity-50 transition-opacity" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="13" stroke="#b97455" stroke-width="1.5"/>
+            <path d="M16 9v7l5 3" stroke="#b97455" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="label-tag" style="color:#a19d92;font-size:0.6rem;">Preview coming soon</span>
+        </div>
+        <div class="p-6">
+          <span class="label-tag block mb-2">Flow 03</span>
+          <h3 class="font-serif-display text-xl mb-2" style="font-weight:400;">Post-Purchase Retention</h3>
+          <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;">A multi-week post-purchase journey that deepens loyalty, drives repeat purchases, and turns buyers into advocates.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio item 4 -->
+      <div class="card group cursor-pointer overflow-hidden">
+        <div class="portfolio-placeholder">
+          <svg class="mb-3 opacity-30 group-hover:opacity-50 transition-opacity" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M4 20c3-6 8-10 12-10s9 4 12 10" stroke="#b97455" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="10" r="3" stroke="#b97455" stroke-width="1.5"/>
+          </svg>
+          <span class="label-tag" style="color:#a19d92;font-size:0.6rem;">Preview coming soon</span>
+        </div>
+        <div class="p-6">
+          <span class="label-tag block mb-2">Flow 04</span>
+          <h3 class="font-serif-display text-xl mb-2" style="font-weight:400;">Win-Back Campaign</h3>
+          <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;">Re-engage dormant subscribers with a compelling reason to return — before they slip from warm to cold permanently.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio item 5 -->
+      <div class="card group cursor-pointer overflow-hidden">
+        <div class="portfolio-placeholder">
+          <svg class="mb-3 opacity-30 group-hover:opacity-50 transition-opacity" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M4 28l5-14 7 8 5-6 7 12" stroke="#b97455" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="label-tag" style="color:#a19d92;font-size:0.6rem;">Preview coming soon</span>
+        </div>
+        <div class="p-6">
+          <span class="label-tag block mb-2">Flow 05</span>
+          <h3 class="font-serif-display text-xl mb-2" style="font-weight:400;">VIP &amp; Loyalty Series</h3>
+          <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;">Reward your highest-LTV customers with exclusive, narrative-rich content that reinforces their status and deepens attachment.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio item 6 — CTA card -->
+      <div class="flex flex-col items-center justify-center p-8 text-center" style="background:linear-gradient(135deg,rgba(185,116,85,0.05) 0%,rgba(137,107,0,0.05) 100%);border:1px solid rgba(185,116,85,0.2);">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" class="mb-4 opacity-60">
+          <circle cx="18" cy="18" r="17" stroke="#b97455" stroke-width="1"/>
+          <path d="M18 11v14M11 18h14" stroke="#b97455" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h3 class="font-serif-display text-xl mb-3" style="font-weight:400;">Your Brand Story<br/>Goes Here</h3>
+        <p style="color:#a19d92;font-size:0.82rem;line-height:1.75;font-weight:300;margin-bottom:1.5rem;">Let's build flows your customers actually want to open.</p>
+        <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="btn-copper" style="font-size:0.65rem;">Start with a Free Audit</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="fancy" />
+
+
+<!-- ═══════════════════════════════════════════════
+     ASYNC AUDIT METHOD + BOOKING
+═══════════════════════════════════════════════ -->
+<section id="audit" class="py-24 px-6 md:px-12">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Section header -->
+    <div class="text-center mb-18">
+      <span class="label-tag block mb-4">The Async Audit Method</span>
+      <h2 class="font-serif-display" style="font-size:clamp(2rem,4vw,3.2rem);font-weight:400;line-height:1.12;">
+        No discovery calls.<br /><em style="color:#b97455;">No wasted afternoons.</em>
+      </h2>
+      <p class="mt-5 mx-auto" style="max-width:500px;color:#a19d92;font-size:0.95rem;line-height:1.8;font-weight:300;">
+        Our asynchronous audit process respects your time completely. Fill out one short form and we handle everything else — no scheduling, no back-and-forth.
+      </p>
+    </div>
+
+    <!-- 3 Steps -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16 mt-14">
+
+      <!-- Step 1 -->
+      <div class="relative p-8 pt-10" style="background:#fff;border:1px solid rgba(185,116,85,0.1);">
+        <span class="step-number">01</span>
+        <div class="mb-5">
+          <div style="width:44px;height:44px;background:rgba(185,116,85,0.08);border:1px solid rgba(185,116,85,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M3 17l2-6 9-9 4 4-9 9-6 2z" stroke="#b97455" stroke-width="1.3" stroke-linejoin="round"/>
+              <path d="M12 4l4 4" stroke="#b97455" stroke-width="1.3"/>
+            </svg>
+          </div>
+        </div>
+        <span class="label-tag block mb-3">Step One</span>
+        <h3 class="font-serif-display mb-3" style="font-size:1.5rem;font-weight:400;">Fill the 2-Min Form</h3>
+        <p style="color:#a19d92;font-size:0.85rem;line-height:1.8;font-weight:300;">
+          Tell us about your brand, your Klaviyo setup, and the retention gaps you already feel. It takes under two minutes — no preparation needed.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="relative p-8 pt-10" style="background:#fff;border:1px solid rgba(185,116,85,0.1);">
+        <span class="step-number">02</span>
+        <div class="mb-5">
+          <div style="width:44px;height:44px;background:rgba(185,116,85,0.08);border:1px solid rgba(185,116,85,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8" stroke="#b97455" stroke-width="1.3"/>
+              <path d="M10 6v4l3 2" stroke="#b97455" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <span class="label-tag block mb-3">Step Two</span>
+        <h3 class="font-serif-display mb-3" style="font-size:1.5rem;font-weight:400;">We Monitor for 7 Days</h3>
+        <p style="color:#a19d92;font-size:0.85rem;line-height:1.8;font-weight:300;">
+          Our team reviews your email program over 7 days — checking send cadence, flow logic, mobile UX, deliverability, and revenue gaps. Completely hands-off for you.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="relative p-8 pt-10" style="background:#fff;border:1px solid rgba(185,116,85,0.1);">
+        <span class="step-number">03</span>
+        <div class="mb-5">
+          <div style="width:44px;height:44px;background:rgba(185,116,85,0.08);border:1px solid rgba(185,116,85,0.2);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="6" width="16" height="11" rx="1" stroke="#b97455" stroke-width="1.3"/>
+              <path d="M2 10l8 5 8-5" stroke="#b97455" stroke-width="1.3"/>
+              <circle cx="15" cy="5" r="3" fill="#b97455" opacity="0.15" stroke="#b97455" stroke-width="1.3"/>
+              <path d="M14 5h2M15 4v2" stroke="#b97455" stroke-width="1"/>
+            </svg>
+          </div>
+        </div>
+        <span class="label-tag block mb-3">Step Three</span>
+        <h3 class="font-serif-display mb-3" style="font-size:1.5rem;font-weight:400;">Receive Your Report</h3>
+        <p style="color:#a19d92;font-size:0.85rem;line-height:1.8;font-weight:300;">
+          We send a personalized screen-recorded video and written notes directly to your inbox — pinpointing exactly where your list is leaking revenue and how to fix it.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ── JotForm intake card ── -->
+    <div class="booking-frame p-2 md:p-3 max-w-4xl mx-auto">
+      <div class="p-8 md:p-12 text-center" style="background:#f9f6ef;border:1px dashed rgba(185,116,85,0.2);">
+
+        <div class="ornament mb-8">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 17l2-6 9-9 4 4-9 9-6 2z" stroke="#b97455" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="M12 4l4 4" stroke="#b97455" stroke-width="1.3"/>
+          </svg>
+        </div>
+
+        <span class="label-tag block mb-4">Free Email Audit — Get Started</span>
+        <h3 class="font-serif-display mb-3" style="font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;line-height:1.15;">
+          Tell us about your brand
+        </h3>
+        <p class="mb-10 mx-auto" style="max-width:440px;color:#a19d92;font-size:0.88rem;line-height:1.8;font-weight:300;">
+          Fill in our 2-minute context form below. Once submitted, our team begins monitoring your email program and will deliver your personalized audit report within 7 days — completely free.
+        </p>
+
+        <!--
+          ══════════════════════════════════════════════════
+          JOTFORM EMBED
+          Option A — Full inline embed (recommended):
+          Replace the placeholder below with your JotForm
+          embed script or iframe, e.g.:
+            <iframe src="https://form.jotform.com/261381374063051"
+              style="width:100%;min-height:600px;border:none;">
+            </iframe>
+
+          Option B — Button link only (current):
+          The button below opens the form in a new tab.
+          JotForm emails you on every submission automatically.
+          ══════════════════════════════════════════════════
+        -->
+
+        <!-- JotForm inline iframe embed -->
+        <div style="background:#fff;border:1px solid rgba(185,116,85,0.12);overflow:hidden;" class="mb-8">
+          <iframe
+            id="jotform-iframe"
+            src="https://form.jotform.com/261381374063051"
+            title="Sendalia Free Email Audit Request"
+            allow="geolocation; microphone; camera"
+            allowfullscreen
+            style="width:100%;min-height:580px;border:none;display:block;"
+            onload="this.style.minHeight = this.contentWindow.document.body.scrollHeight + 'px';"
+          ></iframe>
+        </div>
+
+        <!-- Fallback CTA for browsers that block iframes -->
+        <p style="color:#a19d92;font-size:0.8rem;font-weight:300;margin-bottom:0.75rem;">
+          Form not loading?
+        </p>
+        <a
+          href="https://form.jotform.com/261381374063051"
+          target="_blank"
+          rel="noopener"
+          class="btn-outline"
+          style="font-size:0.7rem;"
+        >
+          Open Audit Form in New Tab →
+        </a>
+
+        <p class="mt-6" style="color:#d9d2c0;font-size:0.75rem;font-weight:300;letter-spacing:0.05em;">
+          100% free · No credit card · No live call required · Report delivered within 7 days
+        </p>
+
+      </div>
+    </div>
+
+    <!-- Trust stats below -->
+    <div class="mt-14 grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto text-center">
+      <div>
+        <div class="font-serif-display mb-1" style="font-size:2.2rem;font-weight:300;color:#b97455;">7</div>
+        <div class="label-tag" style="color:#a19d92;">Days of Monitoring</div>
+      </div>
+      <div>
+        <div class="font-serif-display mb-1" style="font-size:2.2rem;font-weight:300;color:#b97455;">2 min</div>
+        <div class="label-tag" style="color:#a19d92;">To Fill the Form</div>
+      </div>
+      <div>
+        <div class="font-serif-display mb-1" style="font-size:2.2rem;font-weight:300;color:#b97455;">$0</div>
+        <div class="label-tag" style="color:#a19d92;">Cost to You</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="fancy" />
+
+
+<!-- ═══════════════════════════════════════════════
+     FINAL CTA BAND
+═══════════════════════════════════════════════ -->
+<section class="py-24 px-6 md:px-12 text-center" style="background:linear-gradient(135deg,rgba(185,116,85,0.05) 0%,rgba(137,107,0,0.04) 100%);">
+  <div class="max-w-3xl mx-auto">
+    <span class="label-tag block mb-5">Ready to Tell Better Stories?</span>
+    <h2 class="font-serif-display mb-6" style="font-size:clamp(2rem,4.5vw,3.6rem);font-weight:400;line-height:1.1;">
+      Your list is already an asset.<br />
+      <em style="color:#b97455;">Let us unlock it.</em>
+    </h2>
+    <p class="mb-10 mx-auto" style="max-width:460px;color:#a19d92;font-size:0.95rem;line-height:1.8;font-weight:300;">
+      Book your free audit today and receive a personalized video breakdown of exactly where your email program is leaving revenue on the table.
+    </p>
+    <a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" class="btn-copper" style="font-size:0.75rem;padding:1.1rem 3rem;">Claim Your Free Email Audit</a>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<footer class="py-14 px-6 md:px-12">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-14 pb-14" style="border-bottom:1px solid rgba(241,235,219,0.08);">
+
+      <!-- Brand column -->
+      <div class="lg:col-span-2">
+        <div class="mb-5">
+          <!--
+            FOOTER LOGO — black background blends naturally on the dark footer.
+            Full logo: Untitled_Design_-_1__1_.png
+            Icon only: Untitled_Design_-_4__1_.png
+          -->
+          <img
+            src="Untitled_Design_-_1__1_.png"
+            alt="Sendalia — Email Storytellers"
+            style="height:64px;width:auto;object-fit:contain;display:block;"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+          />
+          <div style="display:none;flex-direction:column;">
+            <div style="font-family:'Cormorant Garamond',serif;font-weight:500;font-size:0.95rem;letter-spacing:0.2em;color:rgba(241,235,219,0.85);text-transform:uppercase;">Sendalia</div>
+            <div style="font-family:'Jost',sans-serif;font-weight:300;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(185,116,85,0.7);">Email Storytellers</div>
+          </div>
+        </div>
+        <p style="color:rgba(241,235,219,0.4);font-size:0.82rem;line-height:1.8;font-weight:300;max-width:300px;">
+          We build narrative-driven email programs for high-growth DTC brands that want to turn retention into their most reliable revenue channel.
+        </p>
+        <!-- Email contact -->
+        <div class="flex items-center gap-2 mt-5">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="8" rx="1" stroke="rgba(185,116,85,0.7)" stroke-width="1.1"/>
+            <path d="M1 4l6 4 6-4" stroke="rgba(185,116,85,0.7)" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          <a href="mailto:hello@getsendalia.com" style="color:rgba(185,116,85,0.75);font-size:0.8rem;font-weight:300;letter-spacing:0.04em;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#b97455'" onmouseout="this.style.color='rgba(185,116,85,0.75)'">hello@getsendalia.com</a>
+        </div>
+        <div class="flex gap-5 mt-5">
+          <!-- Social placeholders -->
+          <a href="#" aria-label="Instagram" style="color:rgba(241,235,219,0.3);" class="hover:text-copper transition-colors">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="4" r="0.8" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn" style="color:rgba(241,235,219,0.3);" class="hover:text-copper transition-colors">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5 6.5V11M5 4.5v.5M8 11V8.5c0-1 .5-2 2-2s2 1 2 2V11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook" style="color:rgba(241,235,219,0.3);" class="hover:text-copper transition-colors">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 8H7V11M8.5 6a1.5 1.5 0 00-1.5 1.5V8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div>
+        <p class="label-tag mb-5" style="color:rgba(185,116,85,0.6);">Navigation</p>
+        <ul class="space-y-3">
+          <li><a href="#philosophy" style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;" class="hover:text-copper transition-colors">Our Method</a></li>
+          <li><a href="#portfolio"  style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;" class="hover:text-copper transition-colors">Our Work</a></li>
+          <li><a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;" class="hover:text-copper transition-colors">Free Audit</a></li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div>
+        <p class="label-tag mb-5" style="color:rgba(185,116,85,0.6);">Services</p>
+        <ul class="space-y-3">
+          <li><span style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;">Launchpad Setup</span></li>
+          <li><span style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;">Monthly Retainer</span></li>
+          <li><span style="color:rgba(241,235,219,0.4);font-size:0.82rem;font-weight:300;">Full Stack Package</span></li>
+          <li><a href="https://form.jotform.com/261381374063051" target="_blank" rel="noopener" style="color:rgba(185,116,85,0.6);font-size:0.82rem;font-weight:300;" class="hover:text-copper transition-colors">Free Story Audit →</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <p style="color:rgba(241,235,219,0.25);font-size:0.75rem;font-weight:300;letter-spacing:0.05em;">
+        © 2026 Sendalia. All rights reserved.
+      </p>
+      <a href="mailto:hello@getsendalia.com" style="color:rgba(185,116,85,0.5);font-size:0.75rem;font-weight:300;letter-spacing:0.04em;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#b97455'" onmouseout="this.style.color='rgba(185,116,85,0.5)'">hello@getsendalia.com</a>
+      <p style="color:rgba(241,235,219,0.2);font-size:0.72rem;font-weight:300;letter-spacing:0.04em;">
+        We never sell or share your data. Your privacy is part of our brand promise.
+      </p>
+      <div class="flex gap-5">
+        <a href="#" style="color:rgba(241,235,219,0.2);font-size:0.72rem;font-weight:300;" class="hover:text-copper transition-colors">Privacy Policy</a>
+        <a href="#" style="color:rgba(241,235,219,0.2);font-size:0.72rem;font-weight:300;" class="hover:text-copper transition-colors">Terms</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+</body>
+</html>
