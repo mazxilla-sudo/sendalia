@@ -39,6 +39,7 @@
   </script>
 
   <style>
+    #footer-email::placeholder { color: rgba(241,235,219,0.35); }
     /* ── Base ── */
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -1304,6 +1305,23 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 8H7V11M8.5 6a1.5 1.5 0 00-1.5 1.5V8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           </a>
         </div>
+
+        <!-- Footer newsletter signup (posts to Klaviyo list Yt55qQ) -->
+        <form id="footer-signup" style="max-width:360px;margin-top:2rem;" novalidate>
+          <p class="label-tag" style="color:rgba(185,116,85,0.7);margin:0 0 0.6rem;">The Sendalia Letters</p>
+          <p style="color:rgba(241,235,219,0.4);font-size:0.78rem;line-height:1.6;font-weight:300;margin:0 0 0.8rem;">Email ideas for founder-led brands, twice a month.</p>
+          <div style="display:flex;align-items:stretch;border:1px solid rgba(185,116,85,0.35);border-radius:999px;overflow:hidden;background:rgba(241,235,219,0.04);">
+            <label for="footer-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Email address</label>
+            <input id="footer-email" type="email" name="email" required placeholder="Your email address" autocomplete="email"
+              style="flex:1;min-width:0;background:transparent;border:0;outline:none;color:#f1ebdb;font-family:'Jost',sans-serif;font-size:0.82rem;font-weight:300;padding:0.75rem 1.1rem;" />
+            <button type="submit" id="footer-signup-btn"
+              style="background:#b97455;color:#f1ebdb;font-family:'Jost',sans-serif;font-size:0.65rem;font-weight:400;letter-spacing:0.16em;text-transform:uppercase;padding:0 1.2rem;border:0;cursor:pointer;transition:background 0.2s;"
+              onmouseover="this.style.background='#6d4b1a'" onmouseout="this.style.background='#b97455'">Join</button>
+          </div>
+          <p id="footer-signup-msg" role="status" aria-live="polite" style="font-size:0.72rem;font-weight:300;margin-top:0.6rem;min-height:1em;color:rgba(241,235,219,0.35);">
+            No spam. Unsubscribe anytime. <a href="privacy.html" style="color:rgba(185,116,85,0.7);">Privacy Policy</a>
+          </p>
+        </form>
       </div>
 
       <!-- Navigation -->
@@ -1345,6 +1363,41 @@
 
   </div>
 </footer>
+
+<!-- Footer signup handler: Klaviyo Client Subscriptions API (public key only) -->
+<script>
+(function () {
+  var form = document.getElementById('footer-signup');
+  if (!form) return;
+  var input = document.getElementById('footer-email');
+  var btn = document.getElementById('footer-signup-btn');
+  var msg = document.getElementById('footer-signup-msg');
+  function say(text, color) { msg.textContent = text; msg.style.color = color; }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = (input.value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say("That email doesn't look quite right.", '#d9a48a'); input.focus(); return; }
+    btn.disabled = true; btn.textContent = '...';
+    fetch('https://a.klaviyo.com/client/subscriptions/?company_id=SnnB83', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/vnd.api+json', 'revision': '2024-10-15' },
+      body: JSON.stringify({ data: { type: 'subscription', attributes: {
+        custom_source: 'Website footer',
+        profile: { data: { type: 'profile', attributes: {
+          email: email,
+          subscriptions: { email: { marketing: { consent: 'SUBSCRIBED' } } }
+        } } }
+      }, relationships: { list: { data: { type: 'list', id: 'Yt55qQ' } } } } })
+    }).then(function (r) {
+      if (r.ok) { form.querySelector('div').style.display = 'none'; say("You're in. Your first letter is on its way.", '#b97455'); }
+      else { throw new Error(r.status); }
+    }).catch(function () {
+      say('Something went wrong. Please try again or email hello@getsendalia.com.', '#d9a48a');
+      btn.disabled = false; btn.textContent = 'Join';
+    });
+  });
+})();
+</script>
 
 <!-- Klaviyo onsite JavaScript (forms + tracking) -->
 <script async type="text/javascript" src="https://static.klaviyo.com/onsite/js/SnnB83/klaviyo.js?company_id=SnnB83"></script>
